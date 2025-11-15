@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["Title"] = "TestQuery";
+}
+
+@if (ViewBag.ListData.Count == 0)
+{
+    <h2>No data available</h2>
+}
+
+@foreach (var item in ViewBag.ListData)
+{
+    <div>
+        <p>@item.Id - @item.Name - @item.Age</p>
+    </div>
+}
+
