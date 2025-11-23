@@ -1,0 +1,113 @@
+﻿@model QLDonHang.Entities.Order
+@{
+    var orderItemCounts = ViewBag.OrderItemCounts as Dictionary<string, int>;
+    var itemCount = orderItemCounts?.ContainsKey(Model.OrderId) == true ? orderItemCounts[Model.OrderId] : 0;
+
+    var statusClass = Model.Status.ToLower() switch
+    {
+        "pending" => "status-pending",
+        "processing" => "status-processing",
+        "completed" => "status-completed",
+        "cancelled" => "status-cancelled",
+        _ => "status-pending"
+    };
+
+    var statusText = Model.Status switch
+    {
+        "Pending" => "Chờ xử lý",
+        "Processing" => "Đang xử lý",
+        "Completed" => "Hoàn thành",
+        "Cancelled" => "Đã hủy",
+        _ => Model.Status
+    };
+
+    var statusIcon = Model.Status switch
+    {
+        "Pending" => "bi-clock",
+        "Processing" => "bi-arrow-repeat",
+        "Completed" => "bi-check-circle",
+        "Cancelled" => "bi-x-circle",
+        _ => "bi-clock"
+    };
+}
+
+<div class="order-card @statusClass">
+    <div class="order-header">
+        <div>
+            <div class="order-id">
+                <i class="bi bi-receipt"></i> #@Model.OrderId
+            </div>
+            <div class="order-date">
+                <i class="bi bi-calendar"></i> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")
+            </div>
+        </div>
+        <div>
+            <span class="status-badge @statusClass">
+                <i class="bi @statusIcon"></i> @statusText
+            </span>
+        </div>
+    </div>
+
+    <div class="order-body">
+        <div class="order-info">
+            <div class="order-info-item">
+                <i class="bi bi-box-seam"></i>
+                <span><strong>@itemCount</strong> sản phẩm</span>
+            </div>
+            <div class="order-info-item">
+                <i class="bi bi-geo-alt"></i>
+                <span>Giao đến: <strong>@Model.CountryCode</strong></span>
+            </div>
+            <div class="order-info-item">
+                <i class="bi bi-shop"></i>
+                <span>Kho: <strong>@Model.WarehouseId</strong></span>
+            </div>
+        </div>
+        <div class="order-total">
+            <div class="total-label">Tổng tiền:</div>
+            <div class="total-amount">
+                @Model.TotalAmount.ToString("N0") @Model.Currency
+            </div>
+        </div>
+    </div>
+
+    <div class="order-actions">
+        <a asp-controller="Order" asp-action="OrderDetails" asp-route-id="@Model.OrderId" class="btn-view">
+            <i class="bi bi-eye"></i> Xem chi tiết
+        </a>
+
+        @* @if (Model.Status == "Pending")
+        {
+            <button class="btn-cancel" onclick="cancelOrder('@Model.OrderId')">
+                <i class="bi bi-x-circle"></i> Hủy đơn
+            </button>
+        }
+
+        @if (Model.Status == "Completed")
+        {
+            <button class="btn-reorder" onclick="reorder('@Model.OrderId')">
+                <i class="bi bi-arrow-clockwise"></i> Đặt lại
+            </button>
+        } *@
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function cancelOrder(orderId) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                // TODO: Implement cancel order functionality
+                console.log('Cancelling order:', orderId);
+                // You can add AJAX call here to cancel the order
+            }
+        }
+
+        function reorder(orderId) {
+            if (confirm('Bạn muốn đặt lại đơn hàng này?')) {
+                // TODO: Implement reorder functionality
+                console.log('Reordering:', orderId);
+                // You can add logic to add items back to cart
+            }
+        }
+    </script>
+}

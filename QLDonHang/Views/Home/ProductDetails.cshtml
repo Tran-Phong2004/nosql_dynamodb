@@ -1,0 +1,477 @@
+﻿@model QLDonHang.Entities.Products
+
+@{
+    ViewData["Title"] = Model.ProductName;
+    var pricing = ViewBag.Pricing as QLDonHang.Entities.ProductPricing;
+    var currentRegion = ViewBag.CurrentRegion as string ?? "VN";
+}
+
+<style>
+    .product-detail-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+
+    .product-image-main {
+        width: 100%;
+        height: 500px;
+        object-fit: cover;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+
+        .breadcrumb-custom .breadcrumb-item {
+            color: #6b7280;
+        }
+
+            .breadcrumb-custom .breadcrumb-item.active {
+                color: #667eea;
+                font-weight: 600;
+            }
+
+            .breadcrumb-custom .breadcrumb-item a {
+                color: #667eea;
+                text-decoration: none;
+            }
+
+                .breadcrumb-custom .breadcrumb-item a:hover {
+                    text-decoration: underline;
+                }
+
+    .product-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stars {
+        color: #fbbf24;
+    }
+
+    .price-box {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+    }
+
+    .price-label {
+        font-size: 1rem;
+        color: #92400e;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .price-main {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ef4444;
+    }
+
+    .price-old {
+        text-decoration: line-through;
+        color: #9ca3af;
+        font-size: 1.25rem;
+        margin-left: 1rem;
+    }
+
+    .discount-badge {
+        display: inline-block;
+        background: #ef4444;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-left: 1rem;
+    }
+
+    .tax-info {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .quantity-btn {
+        width: 40px;
+        height: 40px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        border-radius: 8px;
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .quantity-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+    .quantity-input {
+        width: 80px;
+        height: 40px;
+        text-align: center;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-add-cart {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.125rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+        .btn-add-cart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+    .product-info-tabs {
+        margin-top: 3rem;
+    }
+
+    .nav-tabs {
+        border-bottom: 3px solid #e5e7eb;
+    }
+
+        .nav-tabs .nav-link {
+            color: #6b7280;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+            .nav-tabs .nav-link:hover {
+                border-color: transparent;
+                color: #667eea;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: #667eea;
+                border-color: #667eea;
+                background: transparent;
+            }
+
+    .tab-content {
+        padding: 2rem 0;
+    }
+
+    .info-table {
+        width: 100%;
+    }
+
+        .info-table tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+            .info-table tr:last-child {
+                border-bottom: none;
+            }
+
+        .info-table td {
+            padding: 1rem;
+        }
+
+            .info-table td:first-child {
+                font-weight: 600;
+                color: #374151;
+                width: 200px;
+            }
+
+            .info-table td:last-child {
+                color: #6b7280;
+            }
+
+    .tag-badge {
+        display: inline-block;
+        background: #f3f4f6;
+        color: #374151;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb-custom">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index">
+                <i class="bi bi-house-door"></i> Trang chủ
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index" asp-route-category="@Model.Category">
+                @Model.Category
+            </a>
+        </li>
+        <li class="breadcrumb-item active">@Model.ProductName</li>
+    </ol>
+</nav>
+
+<!-- Alerts -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="product-detail-section">
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-lg-6">
+            <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://via.placeholder.com/600x500?text=" + Model.ProductName : Model.ImageUrl)"
+                 alt="@Model.ProductName"
+                 class="product-image-main">
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="mb-3">
+                <span class="badge bg-primary" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                    <i class="bi bi-tag"></i> @Model.Category
+                </span>
+            </div>
+
+            <h1 class="product-title">@Model.ProductName</h1>
+
+            <p class="text-muted mb-4">
+                <i class="bi bi-building"></i> Thương hiệu: <strong>@Model.Brand</strong> |
+                <i class="bi bi-upc"></i> SKU: <strong>@Model.SKU</strong>
+            </p>
+
+            @if (pricing != null)
+            {
+                <div class="price-box">
+                    <div class="price-label">Giá bán:</div>
+                    <div>
+                        <span class="price-main">@pricing.FinalPrice?.ToString("N0") @pricing.Currency</span>
+                        @if (pricing.IsOnSale)
+                        {
+                            <span class="price-old">@pricing.Price.ToString("N0") @pricing.Currency</span>
+                            <span class="discount-badge">-@((pricing.Discount ?? 0).ToString("0"))%</span>
+                        }
+                    </div>
+                    @if (pricing.Tax.HasValue && pricing.Tax > 0)
+                    {
+                        <div class="tax-info">
+                            <i class="bi bi-info-circle"></i> Đã bao gồm thuế @pricing.Tax% |
+                            Giá sau thuế: <strong>@pricing.PriceWithTax?.ToString("N0") @pricing.Currency</strong>
+                        </div>
+                    }
+                </div>
+
+                <form asp-controller="Home" asp-action="PlaceOrder" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.ProductId" />
+                    <input type="hidden" name="region" value="@currentRegion" />
+
+                    <div class="quantity-selector">
+                        <label class="fw-bold">Số lượng:</label>
+                        <button type="button" class="quantity-btn" onclick="decreaseQuantity()">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                        <input type="number" name="quantity" id="quantityInput"
+                               class="quantity-input" value="1" min="1" max="999" required />
+                        <button type="button" class="quantity-btn" onclick="increaseQuantity()">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn btn-add-cart">
+                        <i class="bi bi-cart-plus"></i> Đặt mua ngay
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Sản phẩm chưa có giá cho khu vực <strong>@currentRegion</strong>
+                </div>
+            }
+
+            <div class="row g-3 mt-3">
+                <div class="col-4 text-center">
+                    <div class="feature-icon mx-auto">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <small class="text-muted">Giao hàng nhanh</small>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="feature-icon mx-auto">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <small class="text-muted">Bảo hành chính hãng</small>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="feature-icon mx-auto">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <small class="text-muted">Đổi trả dễ dàng</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Info Tabs -->
+<div class="product-detail-section product-info-tabs">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">
+                <i class="bi bi-info-circle"></i> Mô tả
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#specifications">
+                <i class="bi bi-list-ul"></i> Thông số
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">
+                <i class="bi bi-star"></i> Đánh giá
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Description Tab -->
+        <div class="tab-pane fade show active" id="description">
+            <h4 class="mb-3">Mô tả sản phẩm</h4>
+            <p style="white-space: pre-line; line-height: 1.8; color: #374151;">@Model.Description</p>
+
+            @if (Model.Tags != null && Model.Tags.Any())
+            {
+                <div class="mt-4">
+                    <h5 class="mb-3">Tags:</h5>
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <span class="tag-badge">
+                            <i class="bi bi-tag"></i> @tag
+                        </span>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Specifications Tab -->
+        <div class="tab-pane fade" id="specifications">
+            <h4 class="mb-3">Thông số kỹ thuật</h4>
+            <table class="info-table">
+                <tr>
+                    <td>Mã sản phẩm (SKU)</td>
+                    <td>@Model.SKU</td>
+                </tr>
+                <tr>
+                    <td>Danh mục</td>
+                    <td>@Model.Category</td>
+                </tr>
+                <tr>
+                    <td>Thương hiệu</td>
+                    <td>@Model.Brand</td>
+                </tr>
+                <tr>
+                    <td>Cân nặng</td>
+                    <td>@Model.Weight kg</td>
+                </tr>
+                <tr>
+                    <td>Kích thước</td>
+                    <td>@Model.Dimensions</td>
+                </tr>
+                <tr>
+                    <td>Ngày tạo</td>
+                    <td>@Model.CreatedAt.ToString("dd/MM/yyyy")</td>
+                </tr>
+                @if (Model.UpdatedAt.HasValue)
+                {
+                    <tr>
+                        <td>Cập nhật lần cuối</td>
+                        <td>@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                }
+            </table>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div class="tab-pane fade" id="reviews">
+            <h4 class="mb-3">Đánh giá từ khách hàng</h4>
+            <p class="text-muted">Chức năng đánh giá sẽ được cập nhật sớm.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function increaseQuantity() {
+        const input = document.getElementById('quantityInput');
+        const currentValue = parseInt(input.value) || 1;
+        if (currentValue < 999) {
+            input.value = currentValue + 1;
+        }
+    }
+
+    function decreaseQuantity() {
+        const input = document.getElementById('quantityInput');
+        const currentValue = parseInt(input.value) || 1;
+        if (currentValue > 1) {
+            input.value = currentValue - 1;
+        }
+    }
+</script>

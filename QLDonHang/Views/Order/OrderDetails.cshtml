@@ -1,0 +1,482 @@
+﻿@model QLDonHang.Entities.Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    var orderItems = ViewBag.OrderItems as List<QLDonHang.Entities.OrderItem>;
+    var productInfos = ViewBag.ProductInfos as Dictionary<string, QLDonHang.Entities.Products>;
+}
+
+<style>
+    .order-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .order-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .order-id {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .order-date {
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-top: 1rem;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-processing {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+
+        .info-card h5 {
+            color: #374151;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+    .info-label {
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .product-item {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: #f9fafb;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .product-item:hover {
+            background: #f3f4f6;
+            transform: translateY(-2px);
+        }
+
+    .product-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .product-info {
+        flex: 1;
+    }
+
+    .product-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-meta {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-price {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.75rem;
+    }
+
+    .unit-price {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .total-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        font-size: 1rem;
+    }
+
+    .summary-label {
+        color: #78350f;
+        font-weight: 500;
+    }
+
+    .summary-value {
+        color: #78350f;
+        font-weight: 600;
+    }
+
+    .summary-total {
+        border-top: 2px solid #fbbf24;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+        .summary-total .summary-value {
+            color: #ef4444;
+        }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+    .btn-outline-custom {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-outline-custom:hover {
+            background: #667eea;
+            color: white;
+        }
+
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+
+        .breadcrumb-custom .breadcrumb-item {
+            color: #6b7280;
+        }
+
+            .breadcrumb-custom .breadcrumb-item.active {
+                color: #667eea;
+                font-weight: 600;
+            }
+
+            .breadcrumb-custom .breadcrumb-item a {
+                color: #667eea;
+                text-decoration: none;
+            }
+
+                .breadcrumb-custom .breadcrumb-item a:hover {
+                    text-decoration: underline;
+                }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6b7280;
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+</style>
+
+<div class="order-detail-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-custom">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-house-door"></i> Trang chủ
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="#">Đơn hàng của tôi</a>
+            </li>
+            <li class="breadcrumb-item active">@Model.OrderId</li>
+        </ol>
+    </nav>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Order Header -->
+    <div class="order-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="order-id">
+                    <i class="bi bi-receipt"></i> Đơn hàng #@Model.OrderId
+                </div>
+                <div class="order-date">
+                    <i class="bi bi-calendar"></i> Ngày đặt: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                @{
+                    var statusClass = Model.Status.ToLower() switch
+                    {
+                        "pending" => "status-pending",
+                        "processing" => "status-processing",
+                        "completed" => "status-completed",
+                        "cancelled" => "status-cancelled",
+                        _ => "status-pending"
+                    };
+
+                    var statusText = Model.Status switch
+                    {
+                        "Pending" => "Chờ xử lý",
+                        "Processing" => "Đang xử lý",
+                        "Completed" => "Hoàn thành",
+                        "Cancelled" => "Đã hủy",
+                        _ => Model.Status
+                    };
+
+                    var statusIcon = Model.Status switch
+                    {
+                        "Pending" => "bi-clock",
+                        "Processing" => "bi-arrow-repeat",
+                        "Completed" => "bi-check-circle",
+                        "Cancelled" => "bi-x-circle",
+                        _ => "bi-clock"
+                    };
+                }
+                <span class="status-badge @statusClass">
+                    <i class="bi @statusIcon"></i> @statusText
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Information -->
+        <div class="col-lg-8">
+            <!-- Products List -->
+            <div class="info-card">
+                <h5><i class="bi bi-box-seam"></i> Sản phẩm trong đơn hàng</h5>
+
+                @if (orderItems != null && orderItems.Any())
+                {
+                    foreach (var item in orderItems)
+                    {
+                        var product = productInfos?.ContainsKey(item.ProductId) == true
+                        ? productInfos[item.ProductId]
+                        : null;
+
+                        var itemTotal = item.UnitPrice * item.Quantity;
+
+                        <div class="product-item">
+                            @if (product != null)
+                            {
+                                <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "https://via.placeholder.com/100?text=" + product.ProductName : product.ImageUrl)"
+                                     alt="@product.ProductName"
+                                     class="product-image">
+                            }
+                            else
+                            {
+                                <img src="https://via.placeholder.com/100?text=Product"
+                                     alt="Product"
+                                     class="product-image">
+                            }
+
+                            <div class="product-info">
+                                <div class="product-name">
+                                    @(product?.ProductName ?? item.ProductId)
+                                </div>
+                                <div class="product-meta">
+                                    @if (product != null)
+                                    {
+                                        <span><i class="bi bi-tag"></i> @product.Category</span>
+                                        <span class="mx-2">|</span>
+                                        <span><i class="bi bi-building"></i> @product.Brand</span>
+                                        <span class="mx-2">|</span>
+                                    }
+                                    <span><i class="bi bi-upc"></i> SKU: @(product?.SKU ?? item.ProductId)</span>
+                                </div>
+                                <div class="product-price">
+                                    <div>
+                                        <span class="unit-price">
+                                            @item.UnitPrice.ToString("N0") @item.Currency × @item.Quantity
+                                        </span>
+                                    </div>
+                                    <div class="total-price">
+                                        @itemTotal.ToString("N0") @item.Currency
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <p>Không có sản phẩm trong đơn hàng</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <!-- Shipping Info -->
+            <div class="info-card">
+                <h5><i class="bi bi-geo-alt"></i> Thông tin giao hàng</h5>
+                <div class="info-row">
+                    <span class="info-label">Kho hàng:</span>
+                    <span class="info-value">@Model.WarehouseId</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Quốc gia:</span>
+                    <span class="info-value">@Model.CountryCode</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Loại tiền:</span>
+                    <span class="info-value">@Model.Currency</span>
+                </div>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="summary-card">
+                <h5 style="color: #78350f; border-bottom: 2px solid #fbbf24; margin-bottom: 1rem; padding-bottom: 0.75rem;">
+                    <i class="bi bi-calculator"></i> Tổng kết đơn hàng
+                </h5>
+
+                @{
+                    var subtotal = Model.TotalAmount - Model.TaxAmount - Model.ShippingFee;
+                }
+
+                <div class="summary-row">
+                    <span class="summary-label">Tạm tính:</span>
+                    <span class="summary-value">@subtotal.ToString("N0") @Model.Currency</span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Phí vận chuyển:</span>
+                    <span class="summary-value">@Model.ShippingFee.ToString("N0") @Model.Currency</span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="summary-label">Thuế:</span>
+                    <span class="summary-value">@Model.TaxAmount.ToString("N0") @Model.Currency</span>
+                </div>
+
+                <div class="summary-row summary-total">
+                    <span class="summary-label">Tổng cộng:</span>
+                    <span class="summary-value">@Model.TotalAmount.ToString("N0") @Model.Currency</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a asp-controller="Home" asp-action="Index" class="btn-primary-custom">
+                    <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

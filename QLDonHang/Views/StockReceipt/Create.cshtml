@@ -1,0 +1,446 @@
+﻿@model QLDonHang.Entities.StockReceipt
+
+@{
+    ViewData["Title"] = "Tạo phiếu nhập kho";
+    var warehouses = ViewBag.Warehouses as List<string> ?? new List<string>();
+    var products = ViewBag.Products as List<QLDonHang.Entities.Products> ?? new List<QLDonHang.Entities.Products>();
+}
+
+<style>
+    .receipt-header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .receipt-form {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        padding: 2rem;
+    }
+
+    .section-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+    .items-table {
+        margin-top: 2rem;
+    }
+
+        .items-table table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .items-table th {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .items-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .items-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .items-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+    .btn-add-item {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-add-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+    .btn-remove {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+    }
+
+        .btn-remove:hover {
+            background: #dc2626;
+        }
+
+    .total-section {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .total-amount {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #92400e;
+    }
+
+    .item-row input, .item-row select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+    }
+
+        .item-row input:focus, .item-row select:focus {
+            border-color: #8b5cf6;
+            outline: none;
+        }
+
+    .user-info-box {
+        background: #f3f4f6;
+        border-left: 4px solid #8b5cf6;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #6b7280;
+        font-style: italic;
+    }
+</style>
+
+<div class="receipt-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2" style="--bs-breadcrumb-divider: '›';">
+            <li class="breadcrumb-item">
+                <a asp-action="Index" style="color: rgba(255,255,255,0.8);">
+                    <i class="bi bi-house-door"></i> Phiếu nhập kho
+                </a>
+            </li>
+            <li class="breadcrumb-item active" style="color: white;">Tạo mới</li>
+        </ol>
+    </nav>
+    <h1 class="mb-2">
+        <i class="bi bi-file-earmark-plus"></i> Tạo phiếu nhập kho
+    </h1>
+    <p class="mb-0 opacity-75">Nhập hàng mới vào kho</p>
+</div>
+
+<div class="receipt-form">
+    <form asp-action="Create" method="post" id="receiptForm">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <!-- Thông tin người tạo -->
+        <div class="user-info-box">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-person-circle" style="font-size: 2rem; color: #8b5cf6; margin-right: 1rem;"></i>
+                <div>
+                    <div class="fw-bold">Người tạo phiếu</div>
+                    <div class="text-muted">@User.Identity?.Name</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin chung -->
+        <h4 class="section-title">
+            <i class="bi bi-info-circle"></i> Thông tin phiếu nhập
+        </h4>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label asp-for="WarehouseId" class="form-label">Kho nhập *</label>
+                <select asp-for="WarehouseId" class="form-select" required>
+                    <option value="">-- Chọn kho --</option>
+                    @foreach (var warehouse in warehouses)
+                    {
+                        <option value="@warehouse">@warehouse</option>
+                    }
+                </select>
+                <span asp-validation-for="WarehouseId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="SupplierId" class="form-label">Mã nhà cung cấp *</label>
+                <input asp-for="SupplierId" class="form-control" placeholder="Nhập mã NCC" required />
+                <span asp-validation-for="SupplierId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="SupplierName" class="form-label">Tên nhà cung cấp *</label>
+                <input asp-for="SupplierName" class="form-control" placeholder="Nhập tên NCC" required />
+                <span asp-validation-for="SupplierName" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-12">
+                <label asp-for="Notes" class="form-label">Ghi chú</label>
+                <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Ghi chú thêm (nếu có)"></textarea>
+            </div>
+        </div>
+
+        <!-- Danh sách sản phẩm -->
+        <h4 class="section-title">
+            <i class="bi bi-box-seam"></i> Danh sách sản phẩm nhập
+        </h4>
+
+        <div class="mb-3">
+            <button type="button" class="btn btn-add-item" onclick="addItemRow()">
+                <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+            </button>
+        </div>
+
+        <div class="items-table">
+            <table id="itemsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 30%">Sản phẩm</th>
+                        <th style="width: 15%">Số lượng</th>
+                        <th style="width: 15%">Giá nhập</th>
+                        <th style="width: 15%">Thành tiền</th>
+                        <th style="width: 15%">Số lô</th>
+                        <th style="width: 10%">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tổng tiền -->
+        <div class="total-section">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Tổng số lượng:</span>
+                <span id="totalQuantity" class="fw-bold">0</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <span class="fw-bold">Tổng số sản phẩm:</span>
+                <span id="totalItems" class="fw-bold">0</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="total-amount">Tổng giá trị:</span>
+                <span id="totalAmount" class="total-amount">0 VNĐ</span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-2 justify-content-end mt-4">
+            <a asp-action="Index" class="btn btn-outline-secondary btn-action">
+                <i class="bi bi-x-circle"></i> Hủy
+            </a>
+            <button type="submit" class="btn btn-primary btn-action" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none;">
+                <i class="bi bi-check-circle"></i> Tạo phiếu nhập
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const products = @Html.Raw(Json.Serialize(products));
+        let itemCounter = 0;
+
+        function addItemRow() {
+            const tbody = document.getElementById('itemsTableBody');
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.id = `item-${itemCounter}`;
+            row.dataset.index = itemCounter;
+
+            row.innerHTML = `
+                <td>
+                    <select name="items[${itemCounter}].ProductId" class="product-select" required onchange="updateProductInfo(${itemCounter})">
+                        <option value="">-- Chọn sản phẩm --</option>
+                        ${products.map(p => `<option value="${p.productId}" data-name="${p.productName}" data-sku="${p.sku}">${p.productName} (${p.sku})</option>`).join('')}
+                    </select>
+                    <input type="hidden" name="items[${itemCounter}].ProductName" id="productName-${itemCounter}" />
+                    <input type="hidden" name="items[${itemCounter}].SKU" id="productSku-${itemCounter}" />
+                </td>
+                <td>
+                    <input type="number" name="items[${itemCounter}].Quantity" min="1" value="1" required onchange="calculateTotal()" />
+                </td>
+                <td>
+                    <input type="number" name="items[${itemCounter}].UnitPrice" step="0.01" min="0" value="0" required onchange="calculateTotal()" />
+                </td>
+                <td>
+                    <input type="number" name="items[${itemCounter}].TotalPrice" step="0.01" readonly class="item-total" style="background: #f9fafb;" />
+                </td>
+                <td>
+                    <input type="text" name="items[${itemCounter}].BatchNumber" placeholder="Số lô (optional)" />
+                </td>
+                <td>
+                    <button type="button" class="btn-remove" onclick="removeItemRow(${itemCounter})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+            itemCounter++;
+            calculateTotal();
+            updateTotals();
+        }
+
+        function updateProductInfo(index) {
+            const select = document.querySelector(`#item-${index} .product-select`);
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (selectedOption.value) {
+                document.getElementById(`productName-${index}`).value = selectedOption.dataset.name;
+                document.getElementById(`productSku-${index}`).value = selectedOption.dataset.sku;
+            }
+        }
+
+        function removeItemRow(index) {
+            const row = document.getElementById(`item-${index}`);
+            if (row) {
+                row.remove();
+                reindexItems(); // Cập nhật lại index
+                calculateTotal();
+                updateTotals();
+            }
+        }
+
+        function reindexItems() {
+            const rows = document.querySelectorAll('.item-row');
+            rows.forEach((row, newIndex) => {
+                // Cập nhật lại tất cả name attributes
+                row.querySelectorAll('select, input').forEach(field => {
+                    const name = field.getAttribute('name');
+                    if (name) {
+                        field.setAttribute('name', name.replace(/items\[\d+\]/, `items[${newIndex}]`));
+                    }
+
+                    const id = field.getAttribute('id');
+                    if (id) {
+                        field.setAttribute('id', id.replace(/-\d+$/, `-${newIndex}`));
+                    }
+                });
+
+                // Cập nhật onchange handlers
+                const select = row.querySelector('.product-select');
+                if (select) {
+                    select.setAttribute('onchange', `updateProductInfo(${newIndex})`);
+                }
+
+                row.dataset.index = newIndex;
+                row.id = `item-${newIndex}`;
+            });
+        }
+
+        function calculateTotal() {
+            const rows = document.querySelectorAll('.item-row');
+            rows.forEach(row => {
+                const quantity = parseFloat(row.querySelector('input[name*="Quantity"]').value) || 0;
+                const unitPrice = parseFloat(row.querySelector('input[name*="UnitPrice"]').value) || 0;
+                const totalInput = row.querySelector('input[name*="TotalPrice"]');
+                totalInput.value = (quantity * unitPrice).toFixed(2);
+            });
+            updateTotals();
+        }
+
+        function updateTotals() {
+            const rows = document.querySelectorAll('.item-row');
+            let totalAmount = 0;
+            let totalQuantity = 0;
+            let totalItems = rows.length;
+
+            rows.forEach(row => {
+                const quantity = parseFloat(row.querySelector('input[name*="Quantity"]').value) || 0;
+                const total = parseFloat(row.querySelector('input[name*="TotalPrice"]').value) || 0;
+                totalAmount += total;
+                totalQuantity += quantity;
+            });
+
+            document.getElementById('totalAmount').textContent = totalAmount.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('totalQuantity').textContent = totalQuantity.toLocaleString('vi-VN');
+            document.getElementById('totalItems').textContent = totalItems;
+        }
+
+        // Form validation - IMPROVED
+        document.getElementById('receiptForm').addEventListener('submit', function(e) {
+            const items = document.querySelectorAll('.item-row');
+
+            if (items.length === 0) {
+                e.preventDefault();
+                alert('Vui lòng thêm ít nhất một sản phẩm vào phiếu nhập!');
+                return false;
+            }
+
+            // Kiểm tra xem có ít nhất 1 sản phẩm đã chọn không
+            let hasValidProduct = false;
+            items.forEach(row => {
+                const productSelect = row.querySelector('.product-select');
+                if (productSelect && productSelect.value) {
+                    hasValidProduct = true;
+                }
+            });
+
+            if (!hasValidProduct) {
+                e.preventDefault();
+                alert('Vui lòng chọn ít nhất một sản phẩm!');
+                return false;
+            }
+
+            return true;
+        });
+
+        // Add first row on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            addItemRow();
+        });
+    </script>
+}

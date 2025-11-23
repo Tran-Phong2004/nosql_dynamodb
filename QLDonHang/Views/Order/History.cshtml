@@ -1,0 +1,536 @@
+﻿@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+    var orders = ViewBag.Orders as List<QLDonHang.Entities.Order>;
+    var orderItemCounts = ViewBag.OrderItemCounts as Dictionary<string, int>;
+}
+
+<style>
+    .orders-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .page-subtitle {
+        opacity: 0.9;
+        margin-top: 0.5rem;
+    }
+
+    .filter-tabs {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+
+        .filter-tabs .nav-link {
+            color: #6b7280;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+            .filter-tabs .nav-link:hover {
+                background: #f3f4f6;
+                color: #667eea;
+            }
+
+            .filter-tabs .nav-link.active {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+            }
+
+    .order-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .order-card.status-pending {
+            border-left-color: #fbbf24;
+        }
+
+        .order-card.status-processing {
+            border-left-color: #3b82f6;
+        }
+
+        .order-card.status-completed {
+            border-left-color: #10b981;
+        }
+
+        .order-card.status-cancelled {
+            border-left-color: #ef4444;
+        }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .order-id {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .order-date {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-processing {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .order-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .order-info {
+        flex: 1;
+    }
+
+    .order-info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+        .order-info-item i {
+            color: #667eea;
+            font-size: 1rem;
+        }
+
+    .order-total {
+        text-align: right;
+    }
+
+    .total-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .total-amount {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ef4444;
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid #f3f4f6;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+    .btn-cancel {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        padding: 0.5rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-cancel:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+    .btn-reorder {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.5rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-reorder:hover {
+            background: #667eea;
+            color: white;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+        .empty-state i {
+            font-size: 5rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h4 {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state p {
+            color: #9ca3af;
+            margin-bottom: 2rem;
+        }
+
+    .btn-shopping {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn-shopping:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+    .breadcrumb-custom {
+        background: transparent;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+    }
+
+        .breadcrumb-custom .breadcrumb-item {
+            color: #6b7280;
+        }
+
+            .breadcrumb-custom .breadcrumb-item.active {
+                color: #667eea;
+                font-weight: 600;
+            }
+
+            .breadcrumb-custom .breadcrumb-item a {
+                color: #667eea;
+                text-decoration: none;
+            }
+
+                .breadcrumb-custom .breadcrumb-item a:hover {
+                    text-decoration: underline;
+                }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        color: #667eea;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+</style>
+
+<div class="orders-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-custom">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-house-door"></i> Trang chủ
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Đơn hàng của tôi</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi bi-bag-check-fill"></i> Đơn hàng của tôi
+        </h1>
+        <p class="page-subtitle">
+            Quản lý và theo dõi tất cả đơn hàng của bạn
+        </p>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (orders != null && orders.Any())
+    {
+        <!-- Statistics Summary -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div class="stat-value">@orders.Count</div>
+                <div class="stat-label">Tổng đơn hàng</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-value">@orders.Count(o => o.Status == "Pending")</div>
+                <div class="stat-label">Chờ xử lý</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div class="stat-value">@orders.Count(o => o.Status == "Processing")</div>
+                <div class="stat-label">Đang xử lý</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-value">@orders.Count(o => o.Status == "Completed")</div>
+                <div class="stat-label">Hoàn thành</div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <ul class="nav nav-pills" id="orderFilterTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button">
+                        <i class="bi bi-list-ul"></i> Tất cả (@orders.Count)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending" type="button">
+                        <i class="bi bi-clock"></i> Chờ xử lý (@orders.Count(o => o.Status == "Pending"))
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="processing-tab" data-bs-toggle="pill" data-bs-target="#processing" type="button">
+                        <i class="bi bi-arrow-repeat"></i> Đang xử lý (@orders.Count(o => o.Status == "Processing"))
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="pill" data-bs-target="#completed" type="button">
+                        <i class="bi bi-check-circle"></i> Hoàn thành (@orders.Count(o => o.Status == "Completed"))
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cancelled-tab" data-bs-toggle="pill" data-bs-target="#cancelled" type="button">
+                        <i class="bi bi-x-circle"></i> Đã hủy (@orders.Count(o => o.Status == "Cancelled"))
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Orders List -->
+        <div class="tab-content" id="orderFilterTabsContent">
+            <!-- All Orders -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel">
+                @foreach (var order in orders)
+                {
+                    @await Html.PartialAsync("_OrderCard", order)
+                }
+            </div>
+
+            <!-- Pending Orders -->
+            <div class="tab-pane fade" id="pending" role="tabpanel">
+                @foreach (var order in orders.Where(o => o.Status == "Pending"))
+                {
+                    @await Html.PartialAsync("_OrderCard", order)
+                }
+                @if (!orders.Any(o => o.Status == "Pending"))
+                {
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>Không có đơn hàng chờ xử lý</h4>
+                    </div>
+                }
+            </div>
+
+            <!-- Processing Orders -->
+            <div class="tab-pane fade" id="processing" role="tabpanel">
+                @foreach (var order in orders.Where(o => o.Status == "Processing"))
+                {
+                    @await Html.PartialAsync("_OrderCard", order)
+                }
+                @if (!orders.Any(o => o.Status == "Processing"))
+                {
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>Không có đơn hàng đang xử lý</h4>
+                    </div>
+                }
+            </div>
+
+            <!-- Completed Orders -->
+            <div class="tab-pane fade" id="completed" role="tabpanel">
+                @foreach (var order in orders.Where(o => o.Status == "Completed"))
+                {
+                    @await Html.PartialAsync("_OrderCard", order)
+                }
+                @if (!orders.Any(o => o.Status == "Completed"))
+                {
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>Chưa có đơn hàng hoàn thành</h4>
+                    </div>
+                }
+            </div>
+
+            <!-- Cancelled Orders -->
+            <div class="tab-pane fade" id="cancelled" role="tabpanel">
+                @foreach (var order in orders.Where(o => o.Status == "Cancelled"))
+                {
+                    @await Html.PartialAsync("_OrderCard", order)
+                }
+                @if (!orders.Any(o => o.Status == "Cancelled"))
+                {
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>Không có đơn hàng bị hủy</h4>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="bi bi-cart-x"></i>
+            <h4>Bạn chưa có đơn hàng nào</h4>
+            <p>Hãy bắt đầu mua sắm để tạo đơn hàng đầu tiên của bạn!</p>
+            <a asp-controller="Home" asp-action="Index" class="btn-shopping">
+                <i class="bi bi-cart-plus"></i> Bắt đầu mua sắm
+            </a>
+        </div>
+    }
+</div>

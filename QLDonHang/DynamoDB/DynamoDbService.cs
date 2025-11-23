@@ -119,6 +119,17 @@ namespace QLDonHang.DynamoDB
         }
 
         /// <summary>
+        /// Quét toàn bộ bảng kèm theo điều kiện tùy chỉnh
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public async Task<List<Dictionary<string, AttributeValue>>> ScanTableAsync(ScanRequest scanRequest)
+        {
+            var response = await _dynamoDb.ScanAsync(scanRequest);
+            return response.Items;
+        }
+
+        /// <summary>
         /// Xóa một dòng trong bảng theo key
         /// </summary>
         /// <param name="tableName"></param>
@@ -154,6 +165,34 @@ namespace QLDonHang.DynamoDB
                 ReturnValues = "ALL_NEW" // trả về item mới sau update
             });
             return response;
+        }
+
+        /// <summary>
+        /// Xóa bảng trong DynamoDB
+        /// </summary>
+        /// <param name="tableName">Bảng cần xóa</param>
+        /// <returns></returns>
+        public async Task<bool> DeleteTableAsync(string tableName)
+        {
+            try
+            {
+                var response = await _dynamoDb.DeleteTableAsync(new DeleteTableRequest
+                {
+                    TableName = tableName
+                });
+
+                return response.HttpStatusCode == System.Net.HttpStatusCode.OK;
+            }
+            catch (ResourceNotFoundException)
+            {
+                // bảng chưa tồn tại → coi như xóa thành công
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xóa bảng DynamoDB");
+                return false;
+            }
         }
 
         public async Task<bool> TableExistsAsync(string tableName)

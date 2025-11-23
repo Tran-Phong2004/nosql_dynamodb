@@ -5,14 +5,34 @@ namespace QLDonHang.Entities
 {
     public class CustomerAddress
     {
-        // sort key
-        public string AddressId { get; set; }
+        // Khóa chính - CustomerId
+        public string CustomerId { get; set; } = string.Empty;
 
-        // khóa chính
-        public string CustomerId { get; set; }
-        public string AddressType { get; set; }
-        public string CountryCode { get; set; }
-        public string City { get; set; }
-        public int ZipCode { get; set; }
+        // Sort key - AddressId
+        public string AddressId { get; set; } = string.Empty;
+
+        // Loại địa chỉ: Home, Office, Other
+        public string AddressType { get; set; } = string.Empty;
+
+        // Mã quốc gia
+        public string CountryCode { get; set; } = string.Empty;
+
+        // Thành phố
+        public string City { get; set; } = string.Empty;
+
+        // Địa chỉ chi tiết
+        public string AddressLine { get; set; } = string.Empty;
+
+        // Mã bưu điện (optional)
+        public string? PostalCode { get; set; }
+
+        // Có phải địa chỉ mặc định không
+        public bool IsDefault { get; set; } = false;
+
+        // Ngày tạo
+        public DateTime CreatedAt { get; set; }
+
+        // Ngày cập nhật
+        public DateTime? UpdatedAt { get; set; }
     }
 }

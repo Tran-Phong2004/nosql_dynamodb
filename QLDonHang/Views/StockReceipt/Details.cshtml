@@ -1,0 +1,605 @@
+﻿@model QLDonHang.Entities.StockReceipt
+
+@{
+    ViewData["Title"] = "Chi tiết phiếu nhập kho";
+    var receiptItems = ViewBag.ReceiptItems as List<QLDonHang.Entities.StockReceiptItem> ?? new List<QLDonHang.Entities.StockReceiptItem>();
+}
+
+<style>
+    .details-header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .info-row {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+    .info-label {
+        font-weight: 600;
+        color: #6b7280;
+        width: 180px;
+        flex-shrink: 0;
+    }
+
+    .info-value {
+        color: #1f2937;
+        flex-grow: 1;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-approved {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .items-table {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .table thead th {
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        border: none;
+        font-weight: 600;
+        color: #374151;
+        padding: 1rem;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .total-section {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .total-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+    }
+
+    .total-final {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #92400e;
+        border-top: 2px solid #92400e;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #8b5cf6;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -1.45rem;
+            top: 1.2rem;
+            width: 2px;
+            height: calc(100% - 1rem);
+            background: #e5e7eb;
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+    .user-info-highlight {
+        background: #f3f4f6;
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+</style>
+
+<!-- Header -->
+<div class="details-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2" style="--bs-breadcrumb-divider: '›';">
+            <li class="breadcrumb-item">
+                <a asp-action="Index" style="color: rgba(255,255,255,0.8);">
+                    <i class="bi bi-house-door"></i> Phiếu nhập kho
+                </a>
+            </li>
+            <li class="breadcrumb-item active" style="color: white;">Chi tiết</li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="mb-2">
+                <i class="bi bi-file-earmark-text"></i> Phiếu nhập #@Model.ReceiptId
+            </h1>
+            <p class="mb-0 opacity-75">Thông tin chi tiết phiếu nhập kho</p>
+        </div>
+        @switch (Model.Status)
+        {
+            case "Pending":
+                <span class="status-badge status-pending" style="font-size: 1rem; padding: 0.75rem 1.5rem;">
+                    <i class="bi bi-clock-history"></i> Chờ duyệt
+                </span>
+                break;
+            case "Approved":
+                <span class="status-badge status-approved" style="font-size: 1rem; padding: 0.75rem 1.5rem;">
+                    <i class="bi bi-check-circle"></i> Đã duyệt
+                </span>
+                break;
+            case "Completed":
+                <span class="status-badge status-completed" style="font-size: 1rem; padding: 0.75rem 1.5rem;">
+                    <i class="bi bi-check-all"></i> Hoàn thành
+                </span>
+                break;
+            case "Cancelled":
+                <span class="status-badge status-cancelled" style="font-size: 1rem; padding: 0.75rem 1.5rem;">
+                    <i class="bi bi-x-circle"></i> Đã hủy
+                </span>
+                break;
+        }
+    </div>
+</div>
+
+<!-- Alerts -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-lg-8">
+        <!-- Receipt Info -->
+        <div class="info-card">
+            <h5 class="mb-3">
+                <i class="bi bi-info-circle"></i> Thông tin phiếu nhập
+            </h5>
+            <div class="info-row">
+                <div class="info-label">Mã phiếu:</div>
+                <div class="info-value"><strong>@Model.ReceiptId</strong></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Kho nhập:</div>
+                <div class="info-value">
+                    <i class="bi bi-building"></i> @Model.WarehouseId
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Nhà cung cấp:</div>
+                <div class="info-value">
+                    <div><strong>@Model.SupplierName</strong></div>
+                    <small class="text-muted">Mã: @Model.SupplierId</small>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Ngày nhập:</div>
+                <div class="info-value">
+                    <i class="bi bi-calendar3"></i> @Model.ReceiptDate.ToString("dd/MM/yyyy HH:mm")
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Người tạo:</div>
+                <div class="info-value">
+                    <i class="bi bi-person"></i> @Model.CreatedBy
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Ngày tạo:</div>
+                <div class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.ApprovedBy))
+            {
+                <div class="info-row">
+                    <div class="info-label">Người duyệt:</div>
+                    <div class="info-value">
+                        <i class="bi bi-person-check"></i> @Model.ApprovedBy
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Ngày duyệt:</div>
+                    <div class="info-value">@Model.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.CompletedBy))
+            {
+                <div class="info-row">
+                    <div class="info-label">Người hoàn thành:</div>
+                    <div class="info-value">
+                        <i class="bi bi-person-check-fill"></i> @Model.CompletedBy
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Ngày hoàn thành:</div>
+                    <div class="info-value">@Model.CompletedAt?.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.CancelledBy))
+            {
+                <div class="info-row">
+                    <div class="info-label">Người hủy:</div>
+                    <div class="info-value">
+                        <i class="bi bi-person-x"></i> @Model.CancelledBy
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Ngày hủy:</div>
+                    <div class="info-value">@Model.CancelledAt?.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <div class="info-row">
+                    <div class="info-label">Ghi chú:</div>
+                    <div class="info-value">@Model.Notes</div>
+                </div>
+            }
+        </div>
+
+        <!-- Items Table -->
+        <div class="items-table">
+            <h5 class="mb-3">
+                <i class="bi bi-box-seam"></i> Danh sách sản phẩm
+            </h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>SKU</th>
+                            <th class="text-end">Số lượng</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in receiptItems)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.ProductName</strong>
+                                    @if (!string.IsNullOrEmpty(item.BatchNumber))
+                                    {
+                                        <br />
+                                        <small class="text-muted">Lô: @item.BatchNumber</small>
+                                    }
+                                </td>
+                                <td>@item.SKU</td>
+                                <td class="text-end">@item.Quantity.ToString("N0")</td>
+                                <td class="text-end">@item.UnitPrice.ToString("N0") VNĐ</td>
+                                <td class="text-end"><strong>@item.TotalPrice.ToString("N0") VNĐ</strong></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Total -->
+        <div class="total-section">
+            <div class="total-item">
+                <span>Tổng số lượng:</span>
+                <span><strong>@receiptItems.Sum(i => i.Quantity).ToString("N0")</strong></span>
+            </div>
+            <div class="total-item">
+                <span>Tổng số mặt hàng:</span>
+                <span><strong>@receiptItems.Count</strong></span>
+            </div>
+            <div class="total-item total-final">
+                <span>Tổng giá trị:</span>
+                <span>@Model.TotalAmount.ToString("N0") VNĐ</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-4">
+        <!-- Actions -->
+        <div class="info-card">
+            <h5 class="mb-3">
+                <i class="bi bi-gear"></i> Thao tác
+            </h5>
+            <div class="action-buttons">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-action w-100">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+
+                @if (Model.Status == "Pending")
+                {
+                    <button type="button" class="btn btn-primary btn-action w-100"
+                            data-bs-toggle="modal" data-bs-target="#approveModal">
+                        <i class="bi bi-check-circle"></i> Duyệt phiếu
+                    </button>
+
+                    <button type="button" class="btn btn-danger btn-action w-100"
+                            data-bs-toggle="modal" data-bs-target="#cancelModal">
+                        <i class="bi bi-x-circle"></i> Hủy phiếu
+                    </button>
+                }
+
+                @if (Model.Status == "Approved")
+                {
+                    <button type="button" class="btn btn-success btn-action w-100"
+                            data-bs-toggle="modal" data-bs-target="#completeModal">
+                        <i class="bi bi-check-all"></i> Hoàn thành
+                    </button>
+
+                    <button type="button" class="btn btn-danger btn-action w-100"
+                            data-bs-toggle="modal" data-bs-target="#cancelModal">
+                        <i class="bi bi-x-circle"></i> Hủy phiếu
+                    </button>
+                }
+
+                <button class="btn btn-outline-primary btn-action w-100" onclick="window.print()">
+                    <i class="bi bi-printer"></i> In phiếu
+                </button>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="info-card">
+            <h5 class="mb-3">
+                <i class="bi bi-clock-history"></i> Lịch sử
+            </h5>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="text-muted small">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                    <div><strong>Tạo phiếu</strong></div>
+                    <div class="text-muted small">Bởi: @Model.CreatedBy</div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ApprovedBy))
+                {
+                    <div class="timeline-item">
+                        <div class="text-muted small">@Model.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")</div>
+                        <div><strong>Đã duyệt</strong></div>
+                        <div class="text-muted small">Bởi: @Model.ApprovedBy</div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.CompletedBy))
+                {
+                    <div class="timeline-item">
+                        <div class="text-muted small">@Model.CompletedAt?.ToString("dd/MM/yyyy HH:mm")</div>
+                        <div><strong>Hoàn thành nhập kho</strong></div>
+                        <div class="text-muted small">Bởi: @Model.CompletedBy</div>
+                        <div class="text-muted small">Đã cập nhật tồn kho</div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.CancelledBy))
+                {
+                    <div class="timeline-item">
+                        <div class="text-muted small">@Model.CancelledAt?.ToString("dd/MM/yyyy HH:mm")</div>
+                        <div><strong>Đã hủy</strong></div>
+                        <div class="text-muted small">Bởi: @Model.CancelledBy</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- APPROVE MODAL - KHÔNG CẦN INPUT TÊN -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Approve" asp-route-id="@Model.ReceiptId" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-check-circle"></i> Duyệt phiếu nhập
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        Bạn đang duyệt phiếu nhập kho <strong>#@Model.ReceiptId</strong>.
+                        <br />
+                        Sau khi duyệt, phiếu nhập có thể được hoàn thành để cập nhật tồn kho.
+                    </div>
+
+                    <div class="user-info-highlight">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-check" style="font-size: 1.5rem; margin-right: 0.75rem; color: #8b5cf6;"></i>
+                            <div>
+                                <div class="fw-bold">Người duyệt</div>
+                                <div class="text-muted">@User.Identity?.Name</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Xác nhận duyệt
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- COMPLETE MODAL - KHÔNG CẦN INPUT TÊN -->
+<div class="modal fade" id="completeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Complete" asp-route-id="@Model.ReceiptId" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-check-all"></i> Hoàn thành nhập kho
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Chú ý:</strong> Hành động này sẽ cập nhật số lượng tồn kho và không thể hoàn tác!
+                    </div>
+
+                    <div class="user-info-highlight">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-check-fill" style="font-size: 1.5rem; margin-right: 0.75rem; color: #10b981;"></i>
+                            <div>
+                                <div class="fw-bold">Người hoàn thành</div>
+                                <div class="text-muted">@User.Identity?.Name</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <strong>Tổng giá trị:</strong> @Model.TotalAmount.ToString("N0") VNĐ
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-all"></i> Xác nhận hoàn thành
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- CANCEL MODAL - CHỈ CẦN LÝ DO HỦY -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Cancel" asp-route-id="@Model.ReceiptId" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-x-circle"></i> Hủy phiếu nhập
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lý do hủy *</label>
+                        <textarea name="reason" class="form-control" rows="3"
+                                  placeholder="Nhập lý do hủy phiếu nhập..." required></textarea>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Phiếu nhập sẽ bị hủy và không thể hoàn tác!
+                    </div>
+
+                    <div class="user-info-highlight">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-x" style="font-size: 1.5rem; margin-right: 0.75rem; color: #ef4444;"></i>
+                            <div>
+                                <div class="fw-bold">Người hủy</div>
+                                <div class="text-muted">@User.Identity?.Name</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Xác nhận hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style media="print">
+    .details-header nav,
+    .info-card:has(.action-buttons),
+    .btn-action,
+    .alert {
+        display: none !important;
+    }
+</style>

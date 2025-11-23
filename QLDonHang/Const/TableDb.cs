@@ -12,5 +12,7 @@
         public const string INVENTORY = "Inventory";
         public const string WAREHOUSES = "Warehouses";
         public const string SHIPPING = "Shipping";
+        public const string STOCK_RECEIPTS = "StockReceipts";
+        public const string STOCK_RECEIPT_ITEMS = "StockReceiptItems";
     }
 }

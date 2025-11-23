@@ -1,0 +1,493 @@
+﻿@model QLDonHang.Models.RegisterVM
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="bi bi-person-plus-fill"></i> Đăng ký tài khoản
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-circle-fill"></i> @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Section 1: Account Information -->
+                        <div class="section-title">
+                            <h5><i class="bi bi-person-circle"></i> Thông tin tài khoản</h5>
+                        </div>
+
+                        <div class="row">
+                            <!-- Username -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Username" class="form-label fw-semibold">
+                                    <i class="bi bi-person-circle"></i> Tên đăng nhập
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-at"></i>
+                                    </span>
+                                    <input asp-for="Username" class="form-control" placeholder="Nhập tên đăng nhập" />
+                                </div>
+                                <span asp-validation-for="Username" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label fw-semibold">
+                                    <i class="bi bi-envelope-fill"></i> Email
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-envelope"></i>
+                                    </span>
+                                    <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label fw-semibold">
+                                <i class="bi bi-person-badge-fill"></i> Họ và tên
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input asp-for="FullName" class="form-control" placeholder="Nhập họ và tên đầy đủ" />
+                            </div>
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <!-- Country -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CountryCode" class="form-label fw-semibold">
+                                    <i class="bi bi-globe-americas"></i> Quốc gia
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-flag-fill"></i>
+                                    </span>
+                                    <select asp-for="CountryCode" class="form-select" id="countrySelect">
+                                        <option value="">-- Chọn quốc gia --</option>
+                                        <option value="VN" data-code="+84" data-flag="🇻🇳">🇻🇳 Việt Nam (+84)</option>
+                                        <option value="US" data-code="+1" data-flag="🇺🇸">🇺🇸 United States (+1)</option>
+                                        <option value="JP" data-code="+81" data-flag="🇯🇵">🇯🇵 Japan (+81)</option>
+                                        <option value="KR" data-code="+82" data-flag="🇰🇷">🇰🇷 South Korea (+82)</option>
+                                        <option value="SG" data-code="+65" data-flag="🇸🇬">🇸🇬 Singapore (+65)</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="CountryCode" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Phone" class="form-label fw-semibold">
+                                    <i class="bi bi-telephone-fill"></i> Số điện thoại
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" id="phonePrefix">
+                                        <i class="bi bi-phone"></i> <span id="countryCode">+84</span>
+                                    </span>
+                                    <input asp-for="Phone" class="form-control" placeholder="912345678" id="phoneInput" />
+                                </div>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Address Information -->
+                        <div class="section-title mt-4">
+                            <h5><i class="bi bi-geo-alt-fill"></i> Thông tin địa chỉ</h5>
+                        </div>
+
+                        <div class="row">
+                            <!-- Address Type -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="AddressType" class="form-label fw-semibold">
+                                    <i class="bi bi-house-door"></i> Loại địa chỉ
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-pin-map"></i>
+                                    </span>
+                                    <select asp-for="AddressType" class="form-select">
+                                        <option value="Home">Nhà riêng</option>
+                                        <option value="Office">Văn phòng</option>
+                                        <option value="Other">Khác</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="AddressType" class="text-danger small"></span>
+                            </div>
+
+                            <!-- City -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="City" class="form-label fw-semibold">
+                                    <i class="bi bi-building"></i> Thành phố
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-geo"></i>
+                                    </span>
+                                    <input asp-for="City" class="form-control" placeholder="Hà Nội, TP.HCM, Đà Nẵng..." />
+                                </div>
+                                <span asp-validation-for="City" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Address Line -->
+                        <div class="mb-3">
+                            <label asp-for="AddressLine" class="form-label fw-semibold">
+                                <i class="bi bi-geo-alt"></i> Địa chỉ chi tiết
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-signpost"></i>
+                                </span>
+                                <textarea asp-for="AddressLine" class="form-control" rows="2"
+                                          placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
+                            </div>
+                            <span asp-validation-for="AddressLine" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <!-- Postal Code -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PostalCode" class="form-label fw-semibold">
+                                    <i class="bi bi-mailbox"></i> Mã bưu điện <small class="text-muted">(không bắt buộc)</small>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-envelope-paper"></i>
+                                    </span>
+                                    <input asp-for="PostalCode" class="form-control" placeholder="700000" />
+                                </div>
+                                <span asp-validation-for="PostalCode" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Default Address -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold d-block">
+                                    <i class="bi bi-star-fill"></i> Địa chỉ mặc định
+                                </label>
+                                <div class="form-check form-switch" style="padding-top: 8px;">
+                                    <input asp-for="IsDefaultAddress" class="form-check-input" type="checkbox"
+                                           id="isDefaultAddress" checked style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label" for="isDefaultAddress">
+                                        Đặt làm địa chỉ mặc định
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Password -->
+                        <div class="section-title mt-4">
+                            <h5><i class="bi bi-shield-lock-fill"></i> Mật khẩu</h5>
+                        </div>
+
+                        <div class="row">
+                            <!-- Password -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label fw-semibold">
+                                    <i class="bi bi-key-fill"></i> Mật khẩu
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                    <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu" id="password" />
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="bi bi-eye-fill" id="eyeIcon"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                                <div class="password-strength mt-2">
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" id="passwordStrengthBar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <small class="text-muted" id="passwordStrengthText"></small>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label fw-semibold">
+                                    <i class="bi bi-shield-check"></i> Xác nhận mật khẩu
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-key"></i>
+                                    </span>
+                                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" id="confirmPassword" />
+                                    <span class="input-group-text" id="matchIcon"></span>
+                                </div>
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-3 mt-3">
+                            <div class="form-check">
+                                <input asp-for="AgreeToTerms" class="form-check-input" id="agreeTerms" />
+                                <label asp-for="AgreeToTerms" class="form-check-label">
+                                    Tôi đồng ý với <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#termsModal">điều khoản sử dụng</a> và <a href="#" class="text-primary">chính sách bảo mật</a>
+                                </label>
+                            </div>
+                            <span asp-validation-for="AgreeToTerms" class="text-danger small d-block"></span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus-fill"></i> Đăng ký tài khoản
+                            </button>
+                        </div>
+
+                        <!-- Login Link -->
+                        <div class="text-center">
+                            <p class="mb-0 text-muted">
+                                Đã có tài khoản?
+                                <a asp-action="Login" class="text-primary fw-bold text-decoration-none">
+                                    <i class="bi bi-box-arrow-in-right"></i> Đăng nhập ngay
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-file-text-fill"></i> Điều khoản sử dụng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Chấp nhận điều khoản</h6>
+                <p>Bằng việc đăng ký tài khoản, bạn đồng ý tuân thủ các điều khoản và điều kiện sử dụng dịch vụ của chúng tôi.</p>
+
+                <h6>2. Bảo mật thông tin</h6>
+                <p>Chúng tôi cam kết bảo mật thông tin cá nhân của bạn và chỉ sử dụng cho mục đích cung cấp dịch vụ.</p>
+
+                <h6>3. Trách nhiệm người dùng</h6>
+                <p>Bạn có trách nhiệm bảo mật thông tin đăng nhập và chịu trách nhiệm về mọi hoạt động trên tài khoản của mình.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="acceptTerms()">
+                    <i class="bi bi-check-circle"></i> Tôi đồng ý
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordField = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                eyeIcon.classList.remove('bi-eye-fill');
+                eyeIcon.classList.add('bi-eye-slash-fill');
+            } else {
+                passwordField.type = 'password';
+                eyeIcon.classList.remove('bi-eye-slash-fill');
+                eyeIcon.classList.add('bi-eye-fill');
+            }
+        });
+
+        // Update country code when country changes
+        document.getElementById('countrySelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const countryCode = selectedOption.getAttribute('data-code') || '+84';
+            document.getElementById('countryCode').textContent = countryCode;
+        });
+
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('passwordStrengthBar');
+            const strengthText = document.getElementById('passwordStrengthText');
+
+            let strength = 0;
+            let text = '';
+            let colorClass = '';
+
+            if (password.length >= 6) strength += 25;
+            if (password.length >= 10) strength += 25;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 12.5;
+            if (/[^a-zA-Z0-9]/.test(password)) strength += 12.5;
+
+            if (strength < 25) {
+                text = 'Rất yếu';
+                colorClass = 'bg-danger';
+            } else if (strength < 50) {
+                text = 'Yếu';
+                colorClass = 'bg-warning';
+            } else if (strength < 75) {
+                text = 'Trung bình';
+                colorClass = 'bg-info';
+            } else {
+                text = 'Mạnh';
+                colorClass = 'bg-success';
+            }
+
+            strengthBar.style.width = strength + '%';
+            strengthBar.className = 'progress-bar ' + colorClass;
+            strengthText.textContent = password.length > 0 ? 'Độ mạnh: ' + text : '';
+        });
+
+        // Check password match
+        function checkPasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const matchIcon = document.getElementById('matchIcon');
+
+            if (confirmPassword.length > 0) {
+                if (password === confirmPassword) {
+                    matchIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+                } else {
+                    matchIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+                }
+            } else {
+                matchIcon.innerHTML = '';
+            }
+        }
+
+        document.getElementById('password').addEventListener('input', checkPasswordMatch);
+        document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
+
+        // Accept terms function
+        function acceptTerms() {
+            document.getElementById('agreeTerms').checked = true;
+        }
+
+        // Phone input validation (only numbers)
+        document.getElementById('phoneInput').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    </script>
+}
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .card {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 1.5rem;
+        border-bottom: none;
+    }
+
+    .section-title {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #667eea;
+    }
+
+        .section-title h5 {
+            margin: 0;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+
+    .form-control, .form-select {
+        border-left: none;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #ced4da;
+            box-shadow: none;
+        }
+
+    .input-group:focus-within .input-group-text {
+        border-color: #86b7fe;
+        background-color: #e7f1ff;
+    }
+
+    .input-group:focus-within .form-control,
+    .input-group:focus-within .form-select {
+        border-color: #86b7fe;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+    #passwordStrengthBar {
+        transition: all 0.3s ease;
+    }
+
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+
+    .text-decoration-none:hover {
+        text-decoration: underline !important;
+    }
+
+    #phonePrefix {
+        min-width: 80px;
+    }
+
+    #countryCode {
+        font-weight: 600;
+        color: #667eea;
+        margin-left: 5px;
+    }
+
+    textarea.form-control {
+        border-left: none !important;
+    }
+</style>

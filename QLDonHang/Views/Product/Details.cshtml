@@ -1,0 +1,643 @@
+﻿@model QLDonHang.Entities.Products
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+    var pricing = ViewBag.Pricing as List<QLDonHang.Entities.ProductPricing> ?? new List<QLDonHang.Entities.ProductPricing>();
+    var inventory = ViewBag.Inventory as List<QLDonHang.Entities.Inventory> ?? new List<QLDonHang.Entities.Inventory>();
+}
+
+<style>
+    .detail-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+    }
+
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+
+    .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+    }
+
+    .breadcrumb-item.active {
+        color: white;
+    }
+
+    .product-image-container {
+        position: relative;
+        background: #f8f9fa;
+        border-radius: 15px;
+        overflow: hidden;
+        height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-image-main {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .product-status-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .status-active {
+        background: #10b981;
+        color: white;
+    }
+
+    .status-inactive {
+        background: #ef4444;
+        color: white;
+    }
+
+    .detail-body {
+        padding: 2rem;
+    }
+
+    .info-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid #667eea;
+        display: inline-block;
+    }
+
+    .info-row {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+    .info-label {
+        font-weight: 600;
+        color: #6b7280;
+        min-width: 150px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-value {
+        color: #1f2937;
+        flex: 1;
+    }
+
+    .tag-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        color: #667eea;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.875rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .pricing-card {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+    }
+
+    .pricing-region {
+        font-weight: 700;
+        color: #667eea;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .pricing-details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .pricing-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+    }
+
+    .pricing-label {
+        color: #6b7280;
+    }
+
+    .pricing-value {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .price-final {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #10b981;
+        margin-top: 0.5rem;
+    }
+
+    .inventory-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .inventory-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.1);
+        }
+
+    .inventory-warehouse {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .inventory-quantity {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+            color: white;
+        }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+            color: white;
+        }
+
+    .btn-back {
+        background: #e5e7eb;
+        color: #6b7280;
+    }
+
+        .btn-back:hover {
+            background: #d1d5db;
+            color: #374151;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #9ca3af;
+    }
+
+    .stock-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .stock-high {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .stock-medium {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .stock-low {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .no-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+    }
+
+        .no-image-placeholder i {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+</style>
+
+<!-- Header -->
+<div class="detail-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index"><i class="bi bi-house-door"></i> Sản phẩm</a>
+            </li>
+            <li class="breadcrumb-item active">Chi tiết</li>
+        </ol>
+    </nav>
+    <h1 class="mb-0">
+        <i class="bi bi-box-seam"></i> @Model.ProductName
+    </h1>
+    <p class="mb-0 mt-2 opacity-75">
+        <i class="bi bi-tag"></i> @Model.Category |
+        <i class="bi bi-bookmark"></i> @Model.Brand |
+        <i class="bi bi-upc"></i> SKU: @Model.SKU
+    </p>
+</div>
+
+<div class="detail-container">
+    <div class="detail-body">
+        <div class="row">
+            <!-- Left Column - Image -->
+            <div class="col-lg-5">
+                <div class="product-image-container">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="@Model.ProductName" class="product-image-main"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="no-image-placeholder" style="display: none;">
+                            <i class="bi bi-image"></i>
+                            <p>Không có hình ảnh</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-image-placeholder">
+                            <i class="bi bi-image"></i>
+                            <p>Không có hình ảnh</p>
+                        </div>
+                    }
+
+                    <div class="product-status-badge @(Model.IsActive ? "status-active" : "status-inactive")">
+                        <i class="bi bi-@(Model.IsActive ? "check-circle" : "x-circle")"></i>
+                        @(Model.IsActive ? "Đang bán" : "Ngừng bán")
+                    </div>
+                </div>
+
+                <!-- Stock Status -->
+                <div class="mt-3 text-center">
+                    @{
+                        var totalStock = inventory.Sum(i => i.Quantity);
+                    }
+                    @if (Model.IsActive)
+                    {
+                        if (totalStock > 50)
+                        {
+                            <span class="stock-indicator stock-high">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Đang bán - Tồn kho: @totalStock sản phẩm
+                            </span>
+                        }
+                        else if (totalStock > 0)
+                        {
+                            <span class="stock-indicator stock-medium">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                Đang bán - Tồn kho: @totalStock sản phẩm
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="stock-indicator stock-medium">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Đang bán - Chưa nhập kho
+                            </span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="stock-indicator stock-low">
+                            <i class="bi bi-x-circle-fill"></i>
+                            Ngừng bán
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <!-- Right Column - Details -->
+            <div class="col-lg-7">
+                <!-- Basic Information -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-info-circle"></i> Thông tin cơ bản
+                    </h3>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-box"></i> Tên sản phẩm:
+                        </span>
+                        <span class="info-value">@Model.ProductName</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-bookmark"></i> Thương hiệu:
+                        </span>
+                        <span class="info-value">@Model.Brand</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-tag"></i> Danh mục:
+                        </span>
+                        <span class="info-value">@Model.Category</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-upc"></i> Mã SKU:
+                        </span>
+                        <span class="info-value"><code>@Model.SKU</code></span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-file-text"></i> Mô tả:
+                        </span>
+                        <span class="info-value">@Model.Description</span>
+                    </div>
+                </div>
+
+                <!-- Product Specifications -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-rulers"></i> Thông số kỹ thuật
+                    </h3>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-speedometer2"></i> Cân nặng:
+                        </span>
+                        <span class="info-value">@Model.Weight kg</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-rulers"></i> Kích thước:
+                        </span>
+                        <span class="info-value">@Model.Dimensions</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-toggle-on"></i> Trạng thái:
+                        </span>
+                        <span class="info-value">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Đang bán
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle"></i> Ngừng bán
+                                </span>
+                            }
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                @if (Model.Tags != null && Model.Tags.Length > 0)
+                {
+                    <div class="info-section">
+                        <h3 class="section-title">
+                            <i class="bi bi-tags"></i> Tags
+                        </h3>
+                        <div>
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <span class="tag-badge">
+                                    <i class="bi bi-tag-fill"></i> @tag
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Dates -->
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-calendar"></i> Thông tin thời gian
+                    </h3>
+
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="bi bi-calendar-plus"></i> Ngày tạo:
+                        </span>
+                        <span class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                    </div>
+
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="bi bi-calendar-check"></i> Cập nhật:
+                            </span>
+                            <span class="info-value">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing Section -->
+        @if (pricing.Any())
+        {
+            <div class="info-section mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="section-title mb-0">
+                        <i class="bi bi-currency-dollar"></i> Giá theo khu vực
+                    </h3>
+                    <a asp-action="AddPricing" asp-route-id="@Model.ProductId" class="btn btn-success btn-sm">
+                        <i class="bi bi-plus-circle"></i> Thêm giá mới
+                    </a>
+                </div>
+                <div class="row">
+                    @foreach (var price in pricing)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="pricing-card">
+                                <div class="pricing-region">
+                                    <i class="bi bi-geo-alt-fill"></i> @price.Region
+                                </div>
+                                <div class="pricing-details">
+                                    <div class="pricing-item">
+                                        <span class="pricing-label">Giá gốc:</span>
+                                        <span class="pricing-value">@price.Price.ToString("N0") @price.Currency</span>
+                                    </div>
+                                    <div class="pricing-item">
+                                        <span class="pricing-label">Giảm giá:</span>
+                                        <span class="pricing-value">@price.Discount%</span>
+                                    </div>
+                                    <div class="pricing-item">
+                                        <span class="pricing-label">Thuế:</span>
+                                        <span class="pricing-value">@price.Tax%</span>
+                                    </div>
+                                </div>
+                                <div class="price-final">
+                                    <i class="bi bi-tag-fill"></i> @price.PriceWithTax.ToString() @price.Currency
+                                </div>
+                                @if (price.IsOnSale)
+                                {
+                                    <span class="badge bg-danger mt-2">
+                                        <i class="bi bi-fire"></i> Đang giảm giá
+                                    </span>
+                                }
+                                <div class="mt-3 d-flex gap-2">
+                                    <a asp-action="EditPricing" asp-controller="Product" asp-route-id="@price.ProductId" asp-route-region="@price.Region"
+                                       class="btn btn-sm btn-warning flex-fill">
+                                        <i class="bi bi-pencil"></i> Sửa
+                                    </a>
+                                    <form asp-action="DeletePricing" method="post" class="flex-fill"
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa giá cho khu vực @price.Region?')">
+                                        <input type="hidden" name="productId" value="@price.ProductId" />
+                                        <input type="hidden" name="region" value="@price.Region" />
+                                        <button type="submit" class="btn btn-sm btn-danger w-100">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="info-section mt-4">
+                <h3 class="section-title">
+                    <i class="bi bi-currency-dollar"></i> Giá theo khu vực
+                </h3>
+                <div class="empty-state">
+                    <i class="bi bi-currency-exchange"></i>
+                    <h5 class="mt-3">Chưa có giá cho sản phẩm này</h5>
+                    <p class="text-muted">Thêm giá cho các khu vực bán hàng</p>
+                    <a asp-action="AddPricing" asp-route-id="@Model.ProductId" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Thêm giá đầu tiên
+                    </a>
+                </div>
+            </div>
+        }
+
+        <!-- Inventory Section -->
+        @if (inventory.Any())
+        {
+            <div class="info-section">
+                <h3 class="section-title">
+                    <i class="bi bi-warehouse"></i> Tồn kho theo kho hàng
+                </h3>
+                <div class="row">
+                    @foreach (var item in inventory)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="inventory-card">
+                                <div class="inventory-warehouse">
+                                    <i class="bi bi-building"></i> Kho: @item.WarehouseId
+                                </div>
+                                <div class="inventory-quantity">
+                                    <i class="bi bi-boxes"></i> @item.Quantity sản phẩm
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a asp-action="Index" class="btn btn-action btn-back">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-action btn-edit">
+                <i class="bi bi-pencil"></i> Chỉnh sửa
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.ProductId" class="btn btn-action btn-delete">
+                <i class="bi bi-trash"></i> Xóa sản phẩm
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Image error handling
+        document.querySelectorAll('.product-image-main').forEach(img => {
+            img.addEventListener('error', function() {
+                this.style.display = 'none';
+                const placeholder = this.nextElementSibling;
+                if (placeholder) {
+                    placeholder.style.display = 'flex';
+                }
+            });
+        });
+    </script>
+}

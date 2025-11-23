@@ -1,8 +1,458 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<QLDonHang.Entities.Products>
+
+@{
+    ViewData["Title"] = "Trang chủ";
+    var productPricings = ViewBag.ProductPricings as Dictionary<string, QLDonHang.Entities.ProductPricing> ?? new Dictionary<string, QLDonHang.Entities.ProductPricing>();
+    var currentCategory = ViewBag.CurrentCategory as string;
+    var currentSearch = ViewBag.CurrentSearch as string;
+    var currentRegion = ViewBag.CurrentRegion as string ?? "VN";
+    var categories = ViewBag.Categories as List<string> ?? new List<string>();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 0;
+        border-radius: 15px;
+        margin-bottom: 3rem;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 50px;
+        padding: 0.5rem 1.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            padding: 0.75rem;
+        }
+
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+
+    .category-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        background: #f3f4f6;
+        color: #374151;
+        margin: 0.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .category-badge:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .category-badge.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+    .product-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+    .product-image {
+        position: relative;
+        width: 100%;
+        height: 250px;
+        overflow: hidden;
+        background: #f3f4f6;
+    }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.1);
+    }
+
+    .sale-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #ef4444;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .new-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #10b981;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .product-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-category {
+        color: #667eea;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-description {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .price-section {
+        margin-bottom: 1rem;
+    }
+
+    .price-original {
+        text-decoration: line-through;
+        color: #9ca3af;
+        font-size: 0.875rem;
+        margin-right: 0.5rem;
+    }
+
+    .price-current {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ef4444;
+    }
+
+    .price-no-sale {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .btn-buy {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-buy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+    .btn-view {
+        width: 100%;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+
+        .btn-view:hover {
+            background: #667eea;
+            color: white;
+        }
+
+    .region-selector {
+        display: inline-flex;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem;
+        border-radius: 10px;
+    }
+
+    .region-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        background: transparent;
+        color: white;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .region-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .region-btn.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+        .empty-state i {
+            font-size: 5rem;
+            color: #e5e7eb;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+</style>
+
+<!-- Alerts -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="bi bi-globe2"></i> Chào mừng đến GlobalOrder
+        </h1>
+        <p class="lead mb-4">Khám phá hàng ngàn sản phẩm chất lượng từ khắp nơi trên thế giới</p>
+
+        <!-- Region Selector -->
+        <div class="mb-4">
+            <div class="region-selector">
+                <a href="@Url.Action("Index", new { category = currentCategory, search = currentSearch, region = "VN" })"
+                   class="region-btn @(currentRegion == "VN" ? "active" : "")">
+                    <i class="bi bi-geo-alt"></i> Việt Nam
+                </a>
+                <a href="@Url.Action("Index", new { category = currentCategory, search = currentSearch, region = "US" })"
+                   class="region-btn @(currentRegion == "US" ? "active" : "")">
+                    <i class="bi bi-geo-alt"></i> USA
+                </a>
+                <a href="@Url.Action("Index", new { category = currentCategory, search = currentSearch, region = "JP" })"
+                   class="region-btn @(currentRegion == "JP" ? "active" : "")">
+                    <i class="bi bi-geo-alt"></i> Japan
+                </a>
+                <a href="@Url.Action("Index", new { category = currentCategory, search = currentSearch, region = "CN" })"
+                   class="region-btn @(currentRegion == "CN" ? "active" : "")">
+                    <i class="bi bi-geo-alt"></i> China
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <form asp-action="Index" method="get" class="mx-auto" style="max-width: 600px;">
+            <div class="search-box d-flex align-items-center">
+                <i class="bi bi-search text-muted fs-5 ms-2"></i>
+                <input type="text" name="search" class="form-control border-0 shadow-none"
+                       placeholder="Tìm kiếm sản phẩm..." value="@currentSearch">
+                <input type="hidden" name="category" value="@currentCategory">
+                <input type="hidden" name="region" value="@currentRegion">
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-search"></i> Tìm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <div>
+                <h5 class="mb-2"><i class="bi bi-funnel"></i> Danh mục</h5>
+                <div class="category-list">
+                    <a href="@Url.Action("Index", new { search = currentSearch, region = currentRegion })"
+                       class="category-badge @(string.IsNullOrEmpty(currentCategory) ? "active" : "")">
+                        Tất cả
+                    </a>
+                    @foreach (var cat in categories)
+                    {
+                        <a href="@Url.Action("Index", new { category = cat, search = currentSearch, region = currentRegion })"
+                           class="category-badge @(currentCategory == cat ? "active" : "")">
+                            @cat
+                        </a>
+                    }
+                </div>
+            </div>
+            <div class="text-muted">
+                <i class="bi bi-box-seam"></i> Tìm thấy <strong>@Model.Count</strong> sản phẩm
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    @if (Model.Any())
+    {
+        <div class="row g-4 mb-5">
+            @foreach (var product in Model)
+            {
+                var hasPricing = productPricings.ContainsKey(product.ProductId);
+                var pricing = hasPricing ? productPricings[product.ProductId] : null;
+                var isNew = (DateTime.UtcNow - product.CreatedAt).TotalDays <= 7;
+
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "https://via.placeholder.com/300x250?text=" + product.ProductName : product.ImageUrl)"
+                                 alt="@product.ProductName">
+                            @if (isNew)
+                            {
+                                <span class="new-badge">
+                                    <i class="bi bi-star-fill"></i> Mới
+                                </span>
+                            }
+                            @if (pricing != null && pricing.IsOnSale)
+                            {
+                                <span class="sale-badge">
+                                    -@((pricing.Discount ?? 0).ToString("0"))%
+                                </span>
+                            }
+                        </div>
+
+                        <div class="product-body">
+                            <div class="product-category">
+                                <i class="bi bi-tag"></i> @product.Category
+                            </div>
+
+                            <h3 class="product-title">@product.ProductName</h3>
+
+                            <p class="product-description">@product.Description</p>
+
+                            <div class="product-meta">
+                                <span><i class="bi bi-box"></i> @product.SKU</span>
+                                <span><i class="bi bi-building"></i> @product.Brand</span>
+                            </div>
+
+                            @if (hasPricing && pricing != null)
+                            {
+                                <div class="price-section">
+                                    @if (pricing.IsOnSale)
+                                    {
+                                        <span class="price-original">@pricing.Price.ToString("N0") @pricing.Currency</span>
+                                        <div class="price-current">
+                                            @pricing.FinalPrice?.ToString("N0") @pricing.Currency
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="price-no-sale">
+                                            @pricing.Price.ToString("N0") @pricing.Currency
+                                        </div>
+                                    }
+                                </div>
+
+                                <a href="@Url.Action("ProductDetails", new { id = product.ProductId, region = currentRegion })"
+                                   class="btn btn-buy">
+                                    <i class="bi bi-cart-plus"></i> Mua ngay
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning mb-3 p-2 text-center">
+                                    <small><i class="bi bi-exclamation-triangle"></i> Chưa có giá</small>
+                                </div>
+                            }
+
+                            <a href="@Url.Action("ProductDetails", new { id = product.ProductId, region = currentRegion })"
+                               class="btn btn-view">
+                                <i class="bi bi-eye"></i> Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h3>Không tìm thấy sản phẩm nào</h3>
+            <p class="text-muted">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm của bạn</p>
+            <a href="@Url.Action("Index")" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Quay lại trang chủ
+            </a>
+        </div>
+    }
 </div>

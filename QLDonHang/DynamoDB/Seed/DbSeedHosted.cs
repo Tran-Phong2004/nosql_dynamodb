@@ -13,6 +13,9 @@ namespace QLDonHang.DynamoDB.Seed
             await _seeder.SeedAsync(cancellationToken);
         }
 
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public async Task StopAsync(CancellationToken cancellationToken)
+        {
+            await _seeder.DeleteAllTableAsync();
+        }
     }
 }

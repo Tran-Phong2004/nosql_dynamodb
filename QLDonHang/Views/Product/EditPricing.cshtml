@@ -1,0 +1,352 @@
+﻿@model QLDonHang.Entities.ProductPricing
+
+@{
+    ViewData["Title"] = "Chỉnh sửa giá";
+    var product = ViewBag.Product as QLDonHang.Entities.Products;
+}
+
+<style>
+    .pricing-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+
+    .pricing-form {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+    .input-group-text {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+        border: 2px solid #e5e7eb;
+        color: #f59e0b;
+        font-weight: 600;
+    }
+
+    .btn-action {
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .product-info-card {
+        background: #f8f9fa;
+        border-left: 4px solid #f59e0b;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .price-preview {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .price-preview-title {
+        font-weight: 700;
+        color: #92400e;
+        margin-bottom: 1rem;
+    }
+
+    .price-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.5);
+    }
+
+        .price-item:last-child {
+            border-bottom: none;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #92400e;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+            border-top: 2px solid #92400e;
+        }
+
+    .region-readonly {
+        background: #e5e7eb;
+        cursor: not-allowed;
+    }
+</style>
+
+<div class="pricing-header">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2" style="--bs-breadcrumb-divider: '›';">
+            <li class="breadcrumb-item">
+                <a asp-action="Index" style="color: rgba(255,255,255,0.8);">
+                    <i class="bi bi-house-door"></i> Sản phẩm
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="Details" asp-route-id="@product?.ProductId" style="color: rgba(255,255,255,0.8);">
+                    Chi tiết
+                </a>
+            </li>
+            <li class="breadcrumb-item active" style="color: white;">Sửa giá</li>
+        </ol>
+    </nav>
+    <h1 class="mb-2">
+        <i class="bi bi-pencil-square"></i> Chỉnh sửa giá sản phẩm
+    </h1>
+    <p class="mb-0 opacity-75">Cập nhật giá cho khu vực: <strong>@Model.Region</strong></p>
+</div>
+
+<div class="pricing-form">
+    <!-- Product Info -->
+    @if (product != null)
+    {
+        <div class="product-info-card">
+            <div class="d-flex align-items-center gap-3">
+                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    <img src="@product.ImageUrl" alt="@product.ProductName"
+                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                }
+                <div>
+                    <h5 class="mb-1">@product.ProductName</h5>
+                    <small class="text-muted">
+                        <i class="bi bi-tag"></i> @product.Category |
+                        <i class="bi bi-upc"></i> @product.SKU
+                    </small>
+                </div>
+            </div>
+        </div>
+    }
+
+    <form asp-action="EditPricing" asp-controller="Product" method="post" id="pricingForm">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <input type="hidden" asp-for="ProductId" />
+        <input type="hidden" asp-for="Region" />
+
+        <!-- Khu vực (readonly) -->
+        <h4 class="section-title">
+            <i class="bi bi-geo-alt"></i> Thông tin khu vực
+        </h4>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Khu vực / Quốc gia</label>
+                <input type="text" class="form-control region-readonly" value="@Model.Region" readonly />
+                <div class="help-text">
+                    <i class="bi bi-info-circle"></i> Không thể thay đổi khu vực
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Currency" class="form-label">Đơn vị tiền tệ *</label>
+                <select asp-for="Currency" class="form-select" required>
+                    <option value="">-- Chọn đơn vị --</option>
+                    <option value="VND">Việt Nam Đồng (VND)</option>
+                    <option value="USD">US Dollar (USD)</option>
+                    <option value="JPY">Japanese Yen (JPY)</option>
+                    <option value="CNY">Chinese Yuan (CNY)</option>
+                    <option value="KRW">Korean Won (KRW)</option>
+                    <option value="SGD">Singapore Dollar (SGD)</option>
+                    <option value="THB">Thai Baht (THB)</option>
+                    <option value="MYR">Malaysian Ringgit (MYR)</option>
+                    <option value="IDR">Indonesian Rupiah (IDR)</option>
+                    <option value="PHP">Philippine Peso (PHP)</option>
+                    <option value="EUR">Euro (EUR)</option>
+                    <option value="GBP">British Pound (GBP)</option>
+                    <option value="AUD">Australian Dollar (AUD)</option>
+                    <option value="CAD">Canadian Dollar (CAD)</option>
+                </select>
+                <span asp-validation-for="Currency" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Giá -->
+        <h4 class="section-title">
+            <i class="bi bi-cash-stack"></i> Thông tin giá
+        </h4>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label asp-for="Price" class="form-label">Giá gốc *</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                    <input asp-for="Price" type="number" step="0.01" class="form-control"
+                           min="0" placeholder="0.00" required id="priceInput" />
+                </div>
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Tax" class="form-label">Thuế (%)</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-percent"></i></span>
+                    <input asp-for="Tax" type="number" step="0.01" class="form-control"
+                           min="0" max="100" placeholder="0" id="taxInput" />
+                </div>
+                <span asp-validation-for="Tax" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Giảm giá -->
+        <h4 class="section-title">
+            <i class="bi bi-tag"></i> Giảm giá (Tùy chọn)
+        </h4>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label asp-for="Discount" class="form-label">Giảm giá (%)</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-percent"></i></span>
+                    <input asp-for="Discount" type="number" step="0.01" class="form-control"
+                           min="0" max="100" placeholder="0" id="discountInput" />
+                </div>
+                <span asp-validation-for="Discount" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="DiscountAmount" class="form-label">Hoặc giảm cố định</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                    <input asp-for="DiscountAmount" type="number" step="0.01" class="form-control"
+                           min="0" placeholder="0.00" id="discountAmountInput" />
+                </div>
+                <span asp-validation-for="DiscountAmount" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="DiscountStartDate" class="form-label">Ngày bắt đầu giảm</label>
+                <input asp-for="DiscountStartDate" type="datetime-local" class="form-control" />
+                <span asp-validation-for="DiscountStartDate" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="DiscountEndDate" class="form-label">Ngày kết thúc giảm</label>
+                <input asp-for="DiscountEndDate" type="datetime-local" class="form-control" />
+                <span asp-validation-for="DiscountEndDate" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="price-preview" id="pricePreview">
+            <div class="price-preview-title">
+                <i class="bi bi-calculator"></i> Xem trước giá
+            </div>
+            <div class="price-item">
+                <span>Giá gốc:</span>
+                <span id="previewOriginal">0.00</span>
+            </div>
+            <div class="price-item">
+                <span>Giảm giá:</span>
+                <span id="previewDiscount">- 0.00</span>
+            </div>
+            <div class="price-item">
+                <span>Giá sau giảm:</span>
+                <span id="previewAfterDiscount">0.00</span>
+            </div>
+            <div class="price-item">
+                <span>Thuế:</span>
+                <span id="previewTax">+ 0.00</span>
+            </div>
+            <div class="price-item">
+                <span>Giá cuối cùng:</span>
+                <span id="previewFinal">0.00</span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-2 justify-content-end mt-4">
+            <a asp-action="Details" asp-route-id="@Model.ProductId" class="btn btn-outline-secondary btn-action">
+                <i class="bi bi-x-circle"></i> Hủy
+            </a>
+            <button type="submit" class="btn btn-warning btn-action">
+                <i class="bi bi-check-circle"></i> Cập nhật
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Price preview calculation
+        function updatePreview() {
+            const price = parseFloat(document.getElementById('priceInput').value) || 0;
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            const discountAmount = parseFloat(document.getElementById('discountAmountInput').value) || 0;
+            const tax = parseFloat(document.getElementById('taxInput').value) || 0;
+            const currency = document.querySelector('[name="Currency"]').value || '';
+
+            // Calculate
+            let discountValue = 0;
+            if (discountAmount > 0) {
+                discountValue = discountAmount;
+            } else if (discount > 0) {
+                discountValue = price * (discount / 100);
+            }
+
+            const afterDiscount = price - discountValue;
+            const taxValue = afterDiscount * (tax / 100);
+            const finalPrice = afterDiscount + taxValue;
+
+            // Update preview
+            document.getElementById('previewOriginal').textContent = price.toFixed(2) + ' ' + currency;
+            document.getElementById('previewDiscount').textContent = '- ' + discountValue.toFixed(2) + ' ' + currency;
+            document.getElementById('previewAfterDiscount').textContent = afterDiscount.toFixed(2) + ' ' + currency;
+            document.getElementById('previewTax').textContent = '+ ' + taxValue.toFixed(2) + ' ' + currency;
+            document.getElementById('previewFinal').textContent = finalPrice.toFixed(2) + ' ' + currency;
+        }
+
+        // Attach event listeners
+        ['priceInput', 'discountInput', 'discountAmountInput', 'taxInput'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updatePreview);
+        });
+
+        document.querySelector('[name="Currency"]').addEventListener('change', updatePreview);
+
+        // Initial update
+        updatePreview();
+    </script>
+}
